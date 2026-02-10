@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>精准网页时钟</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --bg-1: #0f172a;
+        --bg-2: #111827;
+        --bg-3: #0b1020;
+        --accent: #38bdf8;
+        --accent-2: #a78bfa;
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --panel: rgba(15, 23, 42, 0.72);
+        --glow: rgba(56, 189, 248, 0.35);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background:
+          radial-gradient(1200px 600px at 20% 20%, rgba(56, 189, 248, 0.2), transparent 60%),
+          radial-gradient(900px 500px at 80% 10%, rgba(167, 139, 250, 0.18), transparent 55%),
+          linear-gradient(160deg, var(--bg-1), var(--bg-2) 45%, var(--bg-3));
+        color: var(--text);
+        font-family: "Space Grotesk", "Helvetica Neue", sans-serif;
+        padding: 32px 16px;
+      }
+
+      .clock-shell {
+        width: min(960px, 100%);
+        background: var(--panel);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 28px;
+        padding: clamp(24px, 6vw, 48px);
+        box-shadow:
+          0 30px 60px rgba(2, 6, 23, 0.55),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+        backdrop-filter: blur(18px);
+      }
+
+      .header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 28px;
+      }
+
+      .title {
+        font-size: clamp(18px, 2.8vw, 26px);
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(56, 189, 248, 0.5);
+        color: var(--accent);
+        background: rgba(56, 189, 248, 0.08);
+      }
+
+      .badge::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 12px var(--glow);
+      }
+
+      .time-display {
+        font-family: "JetBrains Mono", "SF Mono", monospace;
+        font-size: clamp(36px, 9vw, 92px);
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-align: center;
+        padding: clamp(16px, 4vw, 26px) clamp(12px, 3vw, 20px);
+        border-radius: 20px;
+        background: rgba(2, 6, 23, 0.6);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        text-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+      }
+
+      .time-grid {
+        display: grid;
+        grid-template-columns: 2.2ch 1.2ch 2.2ch 1.2ch 2.2ch 1.6ch 3ch;
+        align-items: baseline;
+        justify-content: center;
+        row-gap: 12px;
+      }
+
+      .time-grid span {
+        display: inline-block;
+      }
+
+      .ms {
+        font-size: 0.55em;
+        color: var(--accent);
+        letter-spacing: 0.12em;
+        padding-left: 0.2em;
+      }
+
+      .unit {
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        text-transform: uppercase;
+        font-weight: 600;
+      }
+
+      .unit {
+        opacity: 0.9;
+      }
+
+      .sub {
+        margin-top: 18px;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .hint {
+        max-width: 520px;
+        line-height: 1.5;
+      }
+
+      .control {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .toggle {
+        appearance: none;
+        width: 44px;
+        height: 24px;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.3);
+        position: relative;
+        outline: none;
+        cursor: pointer;
+        transition: background 0.2s ease;
+      }
+
+      .toggle::after {
+        content: "";
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #fff;
+        position: absolute;
+        top: 3px;
+        left: 4px;
+        transition: transform 0.2s ease;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.4);
+      }
+
+      .toggle:checked {
+        background: rgba(56, 189, 248, 0.6);
+      }
+
+      .toggle:checked::after {
+        transform: translateX(18px);
+      }
+
+      .label {
+        font-size: 13px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      @media (max-width: 600px) {
+        .sub {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .time-display {
+          letter-spacing: 0.04em;
+        }
+
+        .unit {
+          font-size: 11px;
+          letter-spacing: 0.04em;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="clock-shell">
+      <div class="header">
+        <div class="title">抢票精准时间</div>
+        <div class="badge">同步本地系统时间</div>
+      </div>
+
+      <div class="time-display" aria-live="polite" aria-label="当前时间">
+        <div class="time-grid" aria-hidden="true">
+          <span id="hh">00</span>
+          <span>:</span>
+          <span id="mm">00</span>
+          <span>:</span>
+          <span id="ss">00</span>
+          <span class="ms">.</span>
+          <span class="ms" id="ms">000</span>
+
+          <span class="unit">小时</span>
+          <span></span>
+          <span class="unit">分钟</span>
+          <span></span>
+          <span class="unit">秒</span>
+          <span></span>
+          <span class="unit">毫秒</span>
+        </div>
+      </div>
+
+      <div class="sub">
+        <div class="hint">建议提前打开页面，保持窗口在前台，避免系统进入省电或休眠状态影响刷新频率。</div>
+        <div class="control">
+          <input class="toggle" id="formatToggle" type="checkbox" />
+          <label class="label" for="formatToggle">24小时制</label>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      const hh = document.getElementById("hh");
+      const mm = document.getElementById("mm");
+      const ss = document.getElementById("ss");
+      const ms = document.getElementById("ms");
+      const formatToggle = document.getElementById("formatToggle");
+
+      const pad = (value, length = 2) => String(value).padStart(length, "0");
+
+      let use24 = true;
+      formatToggle.checked = true;
+
+      formatToggle.addEventListener("change", () => {
+        use24 = formatToggle.checked;
+      });
+
+      const update = () => {
+        const now = new Date();
+        let hours = now.getHours();
+        if (!use24) {
+          hours = hours % 12 || 12;
+        }
+
+        hh.textContent = pad(hours);
+        mm.textContent = pad(now.getMinutes());
+        ss.textContent = pad(now.getSeconds());
+        ms.textContent = pad(now.getMilliseconds(), 3);
+
+        requestAnimationFrame(update);
+      };
+
+      requestAnimationFrame(update);
+    </script>
+  </body>
+</html>
